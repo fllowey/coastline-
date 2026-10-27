@@ -28,6 +28,64 @@ function imageData(value) {
   return { buffer, ext };
 }
 
+function chooseEndpoint(api) {
+  const endpoints = Object.entries(api?.named_endpoints || {});
+  const candidates = endpoints.filter(([, info]) =>
+    (info.parameters || []).filter(p => /image/i.test(String(p.component || ""))).length >= 2
+  );
+  if (candidates.length) return candidates[0];
+  if (endpoints.length === 1) return endpoints[0];
+  throw new Error("В публичном AI-пространстве не найден endpoint для двух изображений.");
+}
+
+function buildPayload(parameters, personPath, garmentPath, category) {
+  let personUsed = false;
+  let garmentUsed = false;
+  return (parameters || []).map((p, index) => {
+    const label = String(p.label || p.name || "").toLowerCase();
+    const component = String(p.component || "").toLowerCase();
+    const type = String(p.type || "").toLowerCase();
+    const example = p.example_input;
+    if (component.includes("image") || /image|photo|picture|model|person|garment|clothing|cloth/.test(label)) {
+      if (!personUsed && /person|human|model|person image|human image/.test(label)) {
+        personUsed = true; return handle_file(personPath);
+      }
+      if (!garmentUsed && /garment|clothing|cloth|product|apparel/.test(label)) {
+        garmentUsed = true; return handle_file(garmentPath);
+      }
+      if (!personUsed) { personUsed = true; return handle_file(personPath); }
+      if (!garmentUsed) { garmentUsed = true; return handle_file(garmentPath); }
+    }
+    if (/category|garment type|clothing type/.test(label)) return category;
+    if (/seed/.test(label)) return typeof example === "number" ? example : 42;
+    if (/steps|inference/.test(label)) return typeof example === "number" ? example : 30;
+    if (/guidance|scale/.test(label)) return typeof example === "number" ? example : 2;
+    if (/random/.test(label) && component.includes("checkbox")) return false;
+    if (example !== undefined && example !== null) return example;
+    if (component.includes("checkbox") || type.includes("boolean")) return false;
+    if (component.includes("slider") || component.includes("number")) return 1;
+    if (component.includes("dropdown") || component.includes("radio")) return category;
+    if (component.includes("textbox")) return "";
+    return undefined;
+  });
+}
+
+function extractImage(value) {
+  if (!value) return null;
+  if (typeof value === "string" && /^https?:\/\//i.test(value)) return value;
+  if (Array.isArray(value)) {
+    for (const item of value) { const found = extractImage(item); if (found) return found; }
+  }
+  if (typeof value === "object") {
+    if (typeof value.url === "string") return value.url;
+    if (typeof value.path === "string" && /^https?:\/\//i.test(value.path)) return value.path;
+    for (const key of ["image", "output", "images", "value"]) {
+      const found = extractImage(value[key]); if (found) return found;
+    }
+  }
+  return null;
+}
+
 async function runTryOn(id, person, garment, category) {
   let dir;
   try {
@@ -41,32 +99,22 @@ async function runTryOn(id, person, garment, category) {
     ]);
 
     const client = await Client.connect(SPACE_ID);
-    const categoryMap = { tops: "tops", bottoms: "bottoms", "one-pieces": "one-pieces" };
-    // Public Hugging Face Space; no paid FASHN API key is used by this integration.
-    const result = await client.predict("/try_on", [
-      handle_file(personPath),
-      handle_file(garmentPath),
-      categoryMap[category] || "tops",
-      "model",
-      30,
-      1.5,
-      42,
-      true
-    ]);
-
-    const image = result?.data?.[0];
-    const outputUrl = typeof image === "string" ? image : image?.url;
+    const api = await client.view_api();
+    const [apiName, endpoint] = chooseEndpoint(api);
+    const payload = buildPayload(endpoint.parameters, personPath, garmentPath, category);
+    const result = await client.predict(apiName, payload);
+    const outputUrl = extractImage(result?.data);
     if (!outputUrl) {
-      console.error("Unexpected Hugging Face result:", JSON.stringify(result).slice(0, 1500));
-      throw new Error("AI-сервис не вернул изображение. Попробуй ещё раз.");
+      console.error("Unexpected Hugging Face result:", JSON.stringify({ apiName, result }).slice(0, 1800));
+      throw new Error("AI-сервис не вернул изображение.");
     }
     jobs.set(id, { status: "completed", output: [outputUrl], error: null });
   } catch (error) {
     console.error("COASTLINE Hugging Face try-on failed:", error);
     const message = String(error?.message || "");
     let userMessage = "Бесплатный AI-сервис временно недоступен. Попробуй позже.";
-    if (/queue|busy|rank|timeout/i.test(message)) userMessage = "AI сейчас занят. Подожди немного и попробуй снова.";
-    if (/api_name|endpoint|not found|does not exist/i.test(message)) userMessage = "AI-модель изменила свой интерфейс. Нужно обновить подключение.";
+    if (/queue|busy|rank|timeout|sleeping/i.test(message)) userMessage = "AI сейчас занят или запускается. Подожди немного и попробуй снова.";
+    if (/endpoint|parameters|image/i.test(message)) userMessage = "Не удалось согласовать входные поля с AI-моделью. Нужна проверка API этой модели.";
     jobs.set(id, { status: "failed", output: null, error: userMessage });
   } finally {
     if (dir) await fs.rm(dir, { recursive: true, force: true }).catch(() => {});
