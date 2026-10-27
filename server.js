@@ -44,7 +44,7 @@ async function runTryOn(id, person, garment, category) {
     // person_image, garment_image, category, garment_photo_type,
     // num_timesteps, guidance_scale, seed, segmentation_free.
     console.log("Connecting to public Hugging Face Space:", SPACE_ID);
-    const client = await Client.connect(SPACE_ID);
+    const client = await Client.connect(SPACE_ID, process.env.HF_TOKEN ? { token: process.env.HF_TOKEN } : {});
     console.log("Connected. Starting virtual try-on.");
     const result = await client.predict("/try_on", [
       handle_file(personPath),
