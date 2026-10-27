@@ -87,7 +87,7 @@ const d=await r.json();if(!r.ok)throw Error(d.error||'Не удалось зап
 setProgress(18,'Запрос отправлен в AI');let progress=22;
 generationTimer=setInterval(()=>{if(progress<91){progress+=Math.max(1,(91-progress)*.06);setProgress(Math.round(progress),progress<45?'Анализ фотографий':progress<72?'AI создаёт образ':'Финальная обработка');}},1800);
 let done=false;
-for(let i=0;i<180;i++){await new Promise(x=>setTimeout(x,2000));const q=await fetch('/api/tryon/status/'+encodeURIComponent(d.id));const z=await q.json();if(!q.ok)throw Error(z.error||'Не удалось проверить результат.');
+for(let i=0;i<480;i++){await new Promise(x=>setTimeout(x,2000));const q=await fetch('/api/tryon/status/'+encodeURIComponent(d.id));const z=await q.json();if(!q.ok)throw Error(z.error||'Не удалось проверить результат.');
 if(z.status==='completed'){const url=(z.output||[])[0];if(!url)throw Error('AI не вернул изображение.');clearInterval(generationTimer);currentResultUrl=url;$('result').src=url;$('result').style.display='block';$('saveResult').href=url;$('saveResult').style.display='table';$('resultLoader').classList.remove('active');$('resultCaption').textContent='Готовый образ добавлен в «Мои работы» на этом устройстве.';setProgress(100,'Готово');await storeWork(url);status('Готово! Результат сохранён в «Мои работы».');done=true;break}
 if(z.status==='failed')throw Error(typeof z.error==='string'?z.error:(z.error?.message||'Генерация не удалась. Попробуй другое фото.'))}
 if(!done)throw Error('Генерация заняла слишком много времени. Попробуй ещё раз.');
