@@ -16,7 +16,7 @@ app.use(express.json({ limit: "20mb" }));
 app.use(express.static(process.cwd()));
 
 const jobs = new Map();
-const SPACE_ID = "merve/fashn-vton-1.5";
+const SPACE_ID = "fashn-ai/fashn-vton-1.5";
 
 function imageData(value) {
   if (typeof value !== "string") return null;
