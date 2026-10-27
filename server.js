@@ -86,20 +86,38 @@ async function runTryOn(id, person, garment, category) {
       }
     ];
 
+    // A timeout lets COASTLINE move on even if a public Space hangs.
+    const withTimeout = (promise, ms, label) => Promise.race([
+      promise,
+      new Promise((_, reject) => setTimeout(() => reject(new Error(label + " timed out after " + ms + "ms")), ms))
+    ]);
+    const isHardStop = message => /quota exceeded|ZeroGPU|runs limit|401|403|unauthorized|forbidden|invalid token|api_name|endpoint|parameters|unexpected argument/i.test(message);
+
     for (const provider of providers) {
-      try {
-        jobs.set(id, { status: "processing", output: null, error: null, provider: provider.name });
-        console.log("COASTLINE trying AI provider:", provider.name, "(" + provider.space + ")");
-        const client = await Client.connect(provider.space, auth);
-        const outputUrl = await provider.run(client);
-        if (!outputUrl) throw new Error("Provider returned no usable image URL.");
-        console.log("COASTLINE AI provider succeeded:", provider.name);
-        jobs.set(id, { status: "completed", output: [outputUrl], error: null, provider: provider.name });
-        return;
-      } catch (error) {
-        const message = String(error?.message || error?.details?.message || error);
-        failures.push(provider.name + ": " + message);
-        console.error("COASTLINE provider failed:", provider.name, message);
+      let succeeded = false;
+      // One automatic retry for transient errors; quota/auth/API errors go straight to the next provider.
+      for (let attempt = 1; attempt <= 2 && !succeeded; attempt++) {
+        try {
+          jobs.set(id, { status: "processing", output: null, error: null, provider: provider.name, attempt });
+          console.log("COASTLINE trying AI provider:", provider.name, "(" + provider.space + "), attempt", attempt);
+          const client = await withTimeout(Client.connect(provider.space, auth), 45000, provider.name + " connection");
+          const outputUrl = await withTimeout(provider.run(client), 65000, provider.name + " generation");
+          if (!outputUrl) throw new Error("Provider returned no usable image URL.");
+          console.log("COASTLINE AI provider succeeded:", provider.name);
+          jobs.set(id, { status: "completed", output: [outputUrl], error: null, provider: provider.name });
+          succeeded = true;
+          return;
+        } catch (error) {
+          const message = String(error?.message || error?.details?.message || error);
+          failures.push(provider.name + " attempt " + attempt + ": " + message);
+          console.error("COASTLINE provider failed:", provider.name, "attempt", attempt, message);
+          if (attempt === 1 && !isHardStop(message)) {
+            jobs.set(id, { status: "processing", output: null, error: null, provider: provider.name, attempt: 2, fallbackMessage: "Повторяем запрос к текущему AI-сервису…" });
+            await new Promise(resolve => setTimeout(resolve, 1200));
+          } else {
+            break;
+          }
+        }
       }
     }
 
