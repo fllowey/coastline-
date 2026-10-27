@@ -27,15 +27,126 @@
 #result{max-width:520px;margin:16px auto 0}
 .download{display:table;margin:12px auto 0}
 @media(max-width:650px){.workspace{margin:0 5vw 28px}.side{grid-template-columns:1fr;gap:14px}.side .panel:last-child{grid-column:auto}.zone{min-height:190px}.upload-thumb{height:180px}.hero{align-items:flex-start}.side .panel:last-child .primary{max-width:none}}
+
+/* Claude-inspired editorial interface: warm paper, ink, restrained terracotta, crisp line icons */
+:root{--sand:#f7f5f0;--paper:#fffefa;--ink:#292824;--muted:#77746d;--deep:#b85c3d;--line:#e7e1d7;--coral:#c77758}
+body{background:#f7f5f0;color:#292824;font-family:'DM Sans',sans-serif}
+.top{background:#f7f5f0;border-bottom:1px solid #e7e1d7}
+.logo{background:#292824;color:#f7f5f0;border-radius:9px 9px 9px 2px;transform:none;font:600 21px Georgia}
+.cta,.primary{background:#292824;border-radius:10px;color:#fffefa}
+.cta:hover,.primary:hover{background:#b85c3d}
+.hero{padding-top:58px}
+.eyebrow{color:#b85c3d;letter-spacing:.17em}
+h1{color:#292824;font-weight:500}
+h1 em{color:#b85c3d}
+.pill{border-radius:8px;color:#77746d;border-color:#e7e1d7}
+.panel{border-color:#e7e1d7;border-radius:15px;box-shadow:0 8px 28px #29282408}
+.head{border-color:#eee9e1}
+.num{border-radius:6px;background:#eee5db;color:#7c4b38}
+.zone{background:#faf8f3;border-color:#d8cfc3;border-radius:12px}
+.zone:hover{background:#f2eee7;border-color:#b85c3d}
+.type{border-radius:8px}
+.type.active{border-color:#b85c3d;background:#f5e9e2;color:#8f422c;box-shadow:inset 0 0 0 1px #b85c3d}
+.status{border-radius:9px}
+.outline,.mini{border-radius:9px}
+.footer{background:#eeeae2}
+.how{border-color:#e7e1d7}
+.toast{background:#292824;border-radius:9px}
+.console-backdrop{position:fixed;inset:0;z-index:50;background:rgba(34,32,28,.42);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:18px}
+.console-backdrop.open{display:flex}
+.console-window{width:min(900px,100%);max-height:min(92vh,900px);overflow:auto;background:#fbfaf6;border:1px solid #e4ddd2;border-radius:18px;box-shadow:0 30px 100px #17151140;animation:consoleIn .22s ease-out}
+@keyframes consoleIn{from{opacity:0;transform:translateY(10px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
+.console-top{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid #e9e3d9}
+.console-brand{display:flex;align-items:center;gap:10px;font-size:12px;font-weight:700;letter-spacing:.13em}
+.console-dot{width:8px;height:8px;border-radius:50%;background:#b85c3d;box-shadow:0 0 0 4px #b85c3d18}
+.console-close{border:1px solid #e4ddd2;background:transparent;color:#292824;width:34px;height:34px;border-radius:9px;font-size:20px;line-height:1}
+.console-content{padding:clamp(20px,4vw,38px)}
+.console-kicker{font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:#b85c3d;font-weight:700}
+.console-title{font:500 clamp(28px,4vw,42px)/1.12 'Playfair Display',serif;margin:12px 0 8px;letter-spacing:-.025em}
+.console-subtitle{font-size:13px;line-height:1.7;color:#77746d;margin:0;max-width:580px}
+.console-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,.75fr);gap:22px;margin-top:27px;align-items:start}
+.console-steps{border:1px solid #e7e1d7;border-radius:12px;overflow:hidden;background:#fffefa}
+.console-step{display:flex;gap:12px;align-items:center;padding:15px;border-bottom:1px solid #eee9e1;color:#77746d;font-size:12px}
+.console-step:last-child{border-bottom:0}
+.step-icon{width:29px;height:29px;flex:0 0 29px;border:1px solid #e7e1d7;border-radius:8px;display:grid;place-items:center;color:#77746d;background:#fbfaf6}
+.console-step.active{color:#292824;background:#f7f1eb}
+.console-step.active .step-icon{border-color:#d9a38d;color:#a64f32;background:#f9eee7}
+.console-step.done .step-icon{background:#e7eee5;border-color:#d1ded0;color:#45654f}
+.console-step b{display:block;font-size:12px;font-weight:600;margin-bottom:3px;color:inherit}
+.console-step small{display:block;font-size:10px;color:#8c887f}
+.console-preview{background:#f0ece4;border:1px solid #e7e1d7;border-radius:12px;min-height:270px;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+.console-preview img{width:100%;max-height:420px;object-fit:contain;display:none}
+.console-placeholder{text-align:center;padding:25px;color:#77746d}
+.console-placeholder svg{margin-bottom:12px;color:#b85c3d}
+.console-placeholder strong{display:block;font-size:12px;color:#292824;margin-bottom:6px}
+.console-placeholder span{font-size:11px;line-height:1.5}
+.console-progress{height:3px;background:#e7e1d7;margin-top:20px;border-radius:10px;overflow:hidden}
+.console-progress-bar{height:100%;width:6%;background:#b85c3d;transition:width .5s ease}
+.console-statusline{display:flex;justify-content:space-between;gap:12px;font-size:11px;color:#77746d;margin-top:9px}
+.console-statusline strong{color:#292824;font-weight:600}
+.console-bottom{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:22px}
+.console-note{font-size:10px;line-height:1.5;color:#89857d;max-width:390px}
+.console-actions{display:flex;gap:8px}
+.console-actions a,.console-actions button{display:none;text-decoration:none;border:1px solid #d8cfc3;border-radius:9px;background:#fffefa;color:#292824;padding:11px 14px;font-size:11px;font-weight:600}
+.console-actions .console-done{background:#292824;color:#fffefa;border-color:#292824}
+.console-actions a.visible,.console-actions button.visible{display:inline-flex}
+@media(max-width:650px){.hero{padding-top:38px}.console-backdrop{padding:8px}.console-window{max-height:96vh;border-radius:14px}.console-top{padding:14px 16px}.console-content{padding:22px 16px}.console-layout{grid-template-columns:1fr;gap:14px;margin-top:20px}.console-preview{min-height:180px;max-height:300px}.console-preview img{max-height:300px}.console-bottom{align-items:flex-start;flex-direction:column}.console-actions{width:100%}.console-actions a,.console-actions button{flex:1;justify-content:center}}
 </style></head><body>
 <header class="top"><div class="brand"><div class="logo">c</div> COASTLINE</div><a href="#how">КАК ЭТО РАБОТАЕТ</a><button class="cta" onclick="document.querySelector('#personFile').click()">Начать примерку ↗</button></header>
 <section class="hero"><div><div class="eyebrow">YOUR STYLE, YOUR RULES</div><h1>Примерь новое.<br><em>Останься собой.</em></h1><p>Загрузи своё фото и вещь, которую хочешь примерить. Найди свой новый образ в спокойном ритме побережья.</p></div><div class="pill">Твоя онлайн-примерочная</div></section>
 <main class="workspace" id="studio"><section class="panel"><div class="head"><span><span class="num">01</span>ТВОЙ ОБРАЗ</span><span class="muted">AI STUDIO</span></div><div class="canvas"><div class="stage" id="stage"><div class="empty" id="empty"><div class="sun"><svg width="31" height="31" viewBox="0 0 32 32" fill="none"><path d="M5 22c6-10 16-10 22-1M8 26c5-5 11-6 17-2M16 5v5M7 9l3 3M25 9l-3 3" stroke="#285d58" stroke-width="1.7" stroke-linecap="round"/><circle cx="16" cy="17" r="2.5" fill="#285d58"/></svg></div><h2>Твой новый образ<br>начинается здесь</h2><p>Добавь фото человека и вещь, которую хочешь примерить.</p><button class="outline" onclick="document.querySelector('#personFile').click()">+ Загрузить фото</button></div><img id="personPreview" class="person hidden" alt="Фото человека"><img id="garmentPreview" class="garment hidden" alt="Загруженная одежда"><div id="hint" class="hint hidden">Перетаскивай вещь, чтобы изменить положение</div></div><div class="actions"><button class="mini" id="reset">↺ Сбросить положение</button><button class="mini" id="remove">× Убрать вещь</button><button class="mini" id="downloadComposition">↓ Скачать композицию</button></div></div></section>
 <aside class="side"><section class="panel"><div class="head"><span><span class="num">01</span>ФОТО ЧЕЛОВЕКА</span></div><div class="body"><label class="zone" for="personFile"><img id="personThumb" class="upload-thumb hidden" alt="Предпросмотр фото человека"><svg width="25" height="25" viewBox="0 0 24 24" fill="none"><rect x="3.5" y="3.5" width="17" height="17" rx="3" stroke="#285d58" stroke-width="1.5"/><circle cx="9" cy="9" r="1.7" stroke="#285d58" stroke-width="1.4"/><path d="m5 18 5-5 3 3 2-2 4 4" stroke="#285d58" stroke-width="1.5" stroke-linecap="round"/></svg><strong>Загрузи свою фотографию</strong><small>Лучше всего — полный рост<br>JPG, PNG или WEBP · до 8 МБ</small><div id="personStatus" class="fileStatus">Фото ещё не добавлено</div></label><input id="personFile" class="hidden" type="file" accept="image/png,image/jpeg,image/webp"></div></section>
 <section class="panel"><div class="head"><span><span class="num">02</span>ФОТО ОДЕЖДЫ</span></div><div class="body"><label class="zone" for="garmentFile"><img id="garmentThumb" class="upload-thumb hidden" alt="Предпросмотр одежды"><svg width="25" height="25" viewBox="0 0 24 24" fill="none"><path d="M12 4v16M4 12h16" stroke="#285d58" stroke-width="1.6" stroke-linecap="round"/></svg><strong>Загрузи фото одежды</strong><small>Однотонный фон даст лучший результат<br>JPG, PNG или WEBP · до 8 МБ</small><div id="garmentStatus" class="fileStatus">Вещь ещё не добавлена</div></label><input id="garmentFile" class="hidden" type="file" accept="image/png,image/jpeg,image/webp"><div class="label">КАТЕГОРИЯ ОДЕЖДЫ</div><div class="types"><button class="type active" data-type="tops">Верх</button><button class="type" data-type="bottoms">Низ</button><button class="type" data-type="one-pieces">Платье</button></div><button class="primary" id="tryOn">Создать образ</button><div class="status" id="status" role="status" aria-live="polite"></div><img id="result" class="result" alt="Результат AI-примерки"><a id="saveResult" class="outline download" download="coastline-look.png">Скачать образ ↓</a><p class="privacy">Для AI-примерки фотографии передаются сервису обработки. Используй только изображения, на обработку которых есть разрешение.</p></div></section></aside></main>
-<section class="how" id="how"><div><div class="eyebrow">SIMPLE AS THE SEA</div><h2>Три шага к новому образу</h2><p>Экспериментируй с вещами и находи сочетания, которые тебе нравятся.</p></div><div class="steps"><div><b>01 — Загрузи фото</b><span>Выбери снимок, на котором хорошо виден силуэт.</span></div><div><b>02 — Добавь вещь</b><span>Загрузи фотографию своей одежды.</span></div><div><b>03 — Примерь с AI</b><span>Получи новый образ и скачай результат.</span></div></div></section><footer class="footer"><span>© 2026 COASTLINE STUDIO</span><span>Создано с любовью к твоему стилю и морскому воздуху.</span></footer><div class="toast" id="toast"></div>
+<section class="how" id="how"><div><div class="eyebrow">SIMPLE AS THE SEA</div><h2>Три шага к новому образу</h2><p>Экспериментируй с вещами и находи сочетания, которые тебе нравятся.</p></div><div class="steps"><div><b>01 — Загрузи фото</b><span>Выбери снимок, на котором хорошо виден силуэт.</span></div><div><b>02 — Добавь вещь</b><span>Загрузи фотографию своей одежды.</span></div><div><b>03 — Примерь с AI</b><span>Получи новый образ и скачай результат.</span></div></div></section><footer class="footer"><span>© 2026 COASTLINE STUDIO</span><span>Создано с любовью к твоему стилю и морскому воздуху.</span></footer><div class="console-backdrop" id="tryonConsole" role="dialog" aria-modal="true" aria-labelledby="consoleTitle">
+<section class="console-window">
+<header class="console-top"><div class="console-brand"><span class="console-dot"></span> COASTLINE <span style="color:#a29b90;font-weight:400;letter-spacing:.04em">/ AI STUDIO</span></div><button class="console-close" id="closeConsole" aria-label="Закрыть">×</button></header>
+<div class="console-content">
+<div class="console-kicker">Виртуальная примерка · Сессия</div>
+<h2 class="console-title" id="consoleTitle">Создаём твой образ</h2>
+<p class="console-subtitle" id="consoleSubtitle">AI анализирует фотографии и переносит выбранную вещь на твой образ. Это может занять до нескольких минут.</p>
+<div class="console-layout">
+<div><div class="console-steps" id="consoleSteps">
+<div class="console-step active" data-step="0"><span class="step-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h11A2.5 2.5 0 0 1 20 7.5v9a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5z" stroke="currentColor" stroke-width="1.5"/><circle cx="9" cy="10" r="1.5" stroke="currentColor" stroke-width="1.5"/><path d="m5 17 5-4 3 2 2-1 4 3" stroke="currentColor" stroke-width="1.5"/></svg></span><span><b>Подготовка фото</b><small>Проверяем входные изображения</small></span></div>
+<div class="console-step" data-step="1"><span class="step-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 3v18M4.5 7 19.5 17M19.5 7 4.5 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.5"/></svg></span><span><b>AI-обработка</b><small>Собираем новый образ</small></span></div>
+<div class="console-step" data-step="2"><span class="step-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="m5 12 4 4L19 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><b>Готовый результат</b><small>Изображение появится здесь</small></span></div>
+</div>
+<div class="console-progress"><div class="console-progress-bar" id="consoleProgress"></div></div>
+<div class="console-statusline"><span id="consoleStatus">Ожидаем запуск</span><strong id="consolePercent">0%</strong></div>
+</div>
+<div class="console-preview" id="consolePreview"><div class="console-placeholder" id="consolePlaceholder"><svg width="28" height="28" viewBox="0 0 24 24" fill="none"><rect x="3.5" y="3.5" width="17" height="17" rx="3" stroke="currentColor" stroke-width="1.4"/><path d="M7 16.5 10.2 13l2.5 2 2.1-2 2.2 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="9" cy="8.5" r="1.2" stroke="currentColor" stroke-width="1.4"/></svg><strong>Превью результата</strong><span>Готовое изображение<br>отобразится в этом окне</span></div><img id="consoleResult" alt="Результат виртуальной примерки"></div>
+</div>
+<div class="console-bottom"><p class="console-note" id="consoleNote">Не закрывай окно, пока идёт обработка. Скорость зависит от доступности бесплатного AI-сервиса.</p><div class="console-actions"><button id="retryConsole">Попробовать снова</button><a id="consoleDownload" download="coastline-look.png">Скачать образ</a><button id="consoleDone" class="console-done">Готово</button></div></div>
+</div></section></div><div class="toast" id="toast"></div>
 <script>
 const $=id=>document.getElementById(id);let personURL=null,garmentURL=null,drag=null,category='tops';function toast(s){const t=$('toast');t.textContent=s;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}function status(s,err=false){$('status').style.display='block';$('status').textContent=s;$('status').style.background=err?'#f8e9e3':'#edf4ee';$('status').style.color=err?'#8d4432':'#285d58'}function load(f,k){if(!f)return;if(!f.type.startsWith('image/'))return toast('Выбери файл изображения.');if(f.size>8*1024*1024)return toast('Файл должен быть до 8 МБ.');const u=URL.createObjectURL(f);if(k==='person'){if(personURL)URL.revokeObjectURL(personURL);personURL=u;$('personPreview').src=u;$('personPreview').classList.remove('hidden');$('personThumb').src=u;$('personThumb').classList.remove('hidden');$('empty').classList.add('hidden');$('personStatus').textContent=f.name}else{if(garmentURL)URL.revokeObjectURL(garmentURL);garmentURL=u;$('garmentPreview').src=u;$('garmentPreview').classList.remove('hidden');$('garmentThumb').src=u;$('garmentThumb').classList.remove('hidden');$('hint').classList.remove('hidden');$('garmentStatus').textContent=f.name}}$('personFile').onchange=e=>load(e.target.files[0],'person');$('garmentFile').onchange=e=>load(e.target.files[0],'garment');document.querySelectorAll('.type').forEach(b=>b.onclick=()=>{document.querySelectorAll('.type').forEach(x=>x.classList.remove('active'));b.classList.add('active');category=b.dataset.type;const p={tops:['50%','38%'],bottoms:['50%','63%'],'one-pieces':['50%','48%']}[category];Object.assign($('garmentPreview').style,{left:p[0],top:p[1],transform:'translate(-50%,-10%)'})});$('remove').onclick=()=>{$('garmentPreview').classList.add('hidden');$('hint').classList.add('hidden');$('garmentFile').value='';$('garmentThumb').classList.add('hidden');$('garmentThumb').removeAttribute('src');$('garmentStatus').textContent='Вещь ещё не добавлена';if(garmentURL)URL.revokeObjectURL(garmentURL);garmentURL=null};$('reset').onclick=()=>{const p={tops:['50%','38%'],bottoms:['50%','63%'],'one-pieces':['50%','48%']}[category];Object.assign($('garmentPreview').style,{left:p[0],top:p[1],transform:'translate(-50%,-10%)'});toast('Положение сброшено')};const stage=$('stage'),g=$('garmentPreview');g.onpointerdown=e=>{if(g.classList.contains('hidden'))return;e.preventDefault();const r=stage.getBoundingClientRect(),q=g.getBoundingClientRect();drag={x:e.clientX,y:e.clientY,left:q.left-r.left,top:q.top-r.top};g.setPointerCapture(e.pointerId);g.style.transform='none';g.style.left=drag.left+'px';g.style.top=drag.top+'px'};g.onpointermove=e=>{if(!drag)return;const r=stage.getBoundingClientRect();g.style.left=Math.max(-r.width*.2,Math.min(r.width*.9,drag.left+e.clientX-drag.x))+'px';g.style.top=Math.max(-r.height*.1,Math.min(r.height*.9,drag.top+e.clientY-drag.y))+'px'};g.onpointerup=()=>drag=null;g.onpointercancel=()=>drag=null;function toData(f){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(f)})}
-$('tryOn').onclick=async()=>{const pf=$('personFile').files[0],gf=$('garmentFile').files[0];if(!pf||!gf)return toast('Загрузи фото человека и одежды.');const b=$('tryOn');b.disabled=true;b.textContent='Готовим примерку…';$('result').style.display='none';$('saveResult').style.display='none';try{status('Отправляем фотографии на AI-примерку…');const [model_image,garment_image]=await Promise.all([toData(pf),toData(gf)]);const r=await fetch('/api/tryon',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model_image,garment_image,category})});const d=await r.json();if(!r.ok)throw Error(d.error||'Не удалось запустить примерку.');let done=false;for(let i=0;i<90;i++){await new Promise(x=>setTimeout(x,2000));status('AI подбирает одежду… Обычно это занимает до нескольких минут.');const q=await fetch('/api/tryon/status/'+encodeURIComponent(d.id));const z=await q.json();if(!q.ok)throw Error(z.error||'Не удалось проверить результат.');if(z.status==='completed'){const url=(z.output||[])[0];if(!url)throw Error('AI не вернул изображение.');$('result').src=url;$('result').style.display='block';$('saveResult').href=url;$('saveResult').style.display='inline-block';status('Готово! Результат ниже — его можно скачать.');done=true;break}if(z.status==='failed')throw Error(typeof z.error==='string'?z.error:(z.error?.message||'Генерация не удалась. Попробуй другое фото.'))}if(!done)throw Error('Генерация заняла слишком много времени. Попробуй ещё раз.')}catch(e){status(e.message||'Ошибка подключения. Проверь настройки сервера.',true)}finally{b.disabled=false;b.textContent='Примерить с AI ↗'}};
+let lastTryOn=null;let consoleTimer=null;
+function openConsole(){ $('tryonConsole').classList.add('open');document.body.style.overflow='hidden'; }
+function closeConsole(){ $('tryonConsole').classList.remove('open');document.body.style.overflow=''; }
+$('closeConsole').onclick=closeConsole;$('consoleDone').onclick=closeConsole;
+$('tryonConsole').onclick=e=>{if(e.target===$('tryonConsole'))closeConsole()};
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('tryonConsole').classList.contains('open'))closeConsole()});
+function setConsoleStep(n){document.querySelectorAll('.console-step').forEach((el,i)=>{el.classList.toggle('active',i===n);el.classList.toggle('done',i<n)});}
+function setConsoleProgress(p,label){$('consoleProgress').style.width=p+'%';$('consolePercent').textContent=p+'%';$('consoleStatus').textContent=label;}
+function consoleReset(){clearInterval(consoleTimer);$('consoleTitle').textContent='Создаём твой образ';$('consoleSubtitle').textContent='AI анализирует фотографии и переносит выбранную вещь на твой образ. Это может занять до нескольких минут.';$('consolePlaceholder').style.display='block';$('consoleResult').style.display='none';$('consoleResult').removeAttribute('src');$('consoleDownload').classList.remove('visible');$('consoleDone').classList.remove('visible');$('retryConsole').classList.remove('visible');setConsoleStep(0);setConsoleProgress(4,'Подготовка');}
+async function runTryOn(){
+const pf=$('personFile').files[0],gf=$('garmentFile').files[0];
+if(!pf||!gf){closeConsole();return toast('Загрузи фото человека и одежды.')}
+const b=$('tryOn');b.disabled=true;b.textContent='Обрабатываем…';consoleReset();openConsole();
+try{
+setConsoleProgress(12,'Подготавливаем фото');setConsoleStep(0);
+const [model_image,garment_image]=await Promise.all([toData(pf),toData(gf)]);
+const r=await fetch('/api/tryon',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model_image,garment_image,category})});
+const d=await r.json();if(!r.ok)throw Error(d.error||'Не удалось запустить примерку.');
+setConsoleProgress(24,'Запрос отправлен');setConsoleStep(1);$('consoleStatus').textContent='Подключаем AI';
+let progress=28;consoleTimer=setInterval(()=>{if(progress<88){progress+=Math.max(1,(88-progress)*.07);setConsoleProgress(Math.round(progress),progress<48?'Анализ изображений':progress<72?'AI создаёт образ':'Финальная обработка')}},1800);
+let done=false;
+for(let i=0;i<90;i++){await new Promise(x=>setTimeout(x,2000));const q=await fetch('/api/tryon/status/'+encodeURIComponent(d.id));const z=await q.json();if(!q.ok)throw Error(z.error||'Не удалось проверить результат.');
+if(z.status==='completed'){const url=(z.output||[])[0];if(!url)throw Error('AI не вернул изображение.');clearInterval(consoleTimer);$('result').src=url;$('result').style.display='block';$('saveResult').href=url;$('saveResult').style.display='inline-block';$('consoleResult').src=url;$('consoleResult').style.display='block';$('consolePlaceholder').style.display='none';$('consoleDownload').href=url;$('consoleDownload').classList.add('visible');$('consoleDone').classList.add('visible');$('consoleTitle').textContent='Твой образ готов';$('consoleSubtitle').textContent='Результат виртуальной примерки готов. Можешь скачать изображение или закрыть окно.';setConsoleStep(3);setConsoleProgress(100,'Готово');$('consoleNote').textContent='Результат создан AI-сервисом. Сохрани изображение, если хочешь оставить его у себя.';status('Готово! Результат создан.');done=true;break}
+if(z.status==='failed')throw Error(typeof z.error==='string'?z.error:(z.error?.message||'Генерация не удалась. Попробуй другое фото.'))}
+if(!done)throw Error('Генерация заняла слишком много времени. Попробуй ещё раз.');
+}catch(e){clearInterval(consoleTimer);$('consoleTitle').textContent='Не удалось завершить примерку';$('consoleSubtitle').textContent=e.message||'Ошибка подключения. Проверь настройки сервера.';setConsoleProgress(100,'Ошибка');$('consoleStatus').textContent='Нужно повторить';$('consoleNote').textContent='Попробуй ещё раз. Если ошибка повторяется, проверь логи сервера.';$('retryConsole').classList.add('visible');$('consoleDone').classList.add('visible');status(e.message||'Ошибка подключения.',true);$('retryConsole').onclick=()=>{closeConsole();runTryOn()}}
+finally{b.disabled=false;b.textContent='Примерить с AI';}
+}
+$('tryOn').onclick=runTryOn;
 $('downloadComposition').onclick=()=>{if(!personURL)return toast('Сначала загрузи фото человека.');const p=$('personPreview'),im=$('garmentPreview'),r=stage.getBoundingClientRect(),c=document.createElement('canvas');c.width=1000;c.height=1000;const x=c.getContext('2d');x.fillStyle='#e7eee5';x.fillRect(0,0,1000,1000);const s=Math.min(1000/p.naturalWidth,1000/p.naturalHeight),w=p.naturalWidth*s,h=p.naturalHeight*s;x.drawImage(p,(1000-w)/2,(1000-h)/2,w,h);if(!im.classList.contains('hidden')&&im.complete){const q=im.getBoundingClientRect();x.drawImage(im,(q.left-r.left)/r.width*1000,(q.top-r.top)/r.height*1000,q.width/r.width*1000,q.height/r.height*1000)}const a=document.createElement('a');a.href=c.toDataURL('image/png');a.download='coastline-look.png';a.click()};
 </script></body></html>
