@@ -6,7 +6,7 @@ const app=express(), PORT=process.env.PORT||3000, KEY=process.env.FASHN_API_KEY;
 app.disable("x-powered-by");
 app.use(helmet({contentSecurityPolicy:false,crossOriginEmbedderPolicy:false}));
 app.use(express.json({limit:"20mb"}));
-app.use(express.static("public"));
+app.use(express.static(process.cwd()));
 app.post("/api/tryon",async(req,res)=>{
  if(!KEY)return res.status(503).json({error:"AI не подключён: добавь FASHN_API_KEY в секреты хостинга."});
  const {model_image,garment_image,category="tops"}=req.body??{};
