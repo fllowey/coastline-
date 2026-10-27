@@ -92,41 +92,6 @@ function extractImage(value) {
   return null;
 }
 
-async function runTryOn(id, person, garment, category) {
-  let dir;
-  try {
-    jobs.set(id, { status: "processing", output: null, error: null });
-    dir = await fs.mkdtemp(path.join(os.tmpdir(), "coastline-"));
-    const personPath = path.join(dir, "person." + person.ext);
-    const garmentPath = path.join(dir, "garment." + garment.ext);
-    await Promise.all([
-      fs.writeFile(personPath, person.buffer),
-      fs.writeFile(garmentPath, garment.buffer)
-    ]);
-
-    const client = await Client.connect(SPACE_ID);
-    const api = await client.view_api();
-    const [apiName, endpoint] = chooseEndpoint(api);
-    const payload = buildPayload(endpoint.parameters, personPath, garmentPath, category);
-    const result = await client.predict(apiName, payload);
-    const outputUrl = extractImage(result?.data);
-    if (!outputUrl) {
-      console.error("Unexpected Hugging Face result:", JSON.stringify({ apiName, result }).slice(0, 1800));
-      throw new Error("AI-сервис не вернул изображение.");
-    }
-    jobs.set(id, { status: "completed", output: [outputUrl], error: null });
-  } catch (error) {
-    console.error("COASTLINE Hugging Face try-on failed:", error);
-    const message = String(error?.message || "");
-    let userMessage = "Бесплатный AI-сервис временно недоступен. Попробуй позже.";
-    if (/queue|busy|rank|timeout|sleeping/i.test(message)) userMessage = "AI сейчас занят или запускается. Подожди немного и попробуй снова.";
-    if (/endpoint|parameters|image/i.test(message)) userMessage = "Не удалось согласовать входные поля с AI-моделью. Нужна проверка API этой модели.";
-    jobs.set(id, { status: "failed", output: null, error: userMessage });
-  } finally {
-    if (dir) await fs.rm(dir, { recursive: true, force: true }).catch(() => {});
-  }
-}
-
 app.post("/api/tryon", async (req, res) => {
   const { model_image, garment_image, category = "tops" } = req.body ?? {};
   const person = imageData(model_image);
