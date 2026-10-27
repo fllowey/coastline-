@@ -68,25 +68,6 @@ async function runTryOn(id, person, garment, category) {
         }
       },
       {
-        name: "FASHN VTON 1.5",
-        space: "fashn-ai/fashn-vton-1.5",
-        generationTimeout: 120000,
-        run: async client => {
-          const mappedCategory = category === "bottoms" ? "bottoms" : category === "one-pieces" ? "one-pieces" : "tops";
-          const result = await client.predict("/try_on", [
-            handle_file(personPath),
-            handle_file(garmentPath),
-            mappedCategory,
-            "flat-lay",
-            25,
-            1.5,
-            -1,
-            true
-          ]);
-          return extractImage(result?.data);
-        }
-      },
-      {
         name: "OOTDiffusion backup",
         space: "levihsu/OOTDiffusion",
         run: async client => {
@@ -120,7 +101,7 @@ async function runTryOn(id, person, garment, category) {
           jobs.set(id, { status: "processing", output: null, error: null, provider: provider.name, attempt });
           console.log("COASTLINE trying AI provider:", provider.name, "(" + provider.space + "), attempt", attempt);
           const client = await withTimeout(Client.connect(provider.space, auth), 45000, provider.name + " connection");
-          const outputUrl = await withTimeout(provider.run(client), provider.generationTimeout || 65000, provider.name + " generation");
+          const outputUrl = await withTimeout(provider.run(client), 65000, provider.name + " generation");
           if (!outputUrl) throw new Error("Provider returned no usable image URL.");
           console.log("COASTLINE AI provider succeeded:", provider.name);
           jobs.set(id, { status: "completed", output: [outputUrl], error: null, provider: provider.name });
