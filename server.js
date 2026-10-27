@@ -68,6 +68,25 @@ async function runTryOn(id, person, garment, category) {
         }
       },
       {
+        name: "FASHN VTON 1.5",
+        space: "fashn-ai/fashn-vton-1.5",
+        generationTimeout: 120000,
+        run: async client => {
+          const mappedCategory = category === "bottoms" ? "bottoms" : category === "one-pieces" ? "one-pieces" : "tops";
+          const result = await client.predict("/try_on", [
+            handle_file(personPath),
+            handle_file(garmentPath),
+            mappedCategory,
+            "flat-lay",
+            25,
+            1.5,
+            -1,
+            true
+          ]);
+          return extractImage(result?.data);
+        }
+      },
+      {
         name: "OOTDiffusion backup",
         space: "levihsu/OOTDiffusion",
         run: async client => {
