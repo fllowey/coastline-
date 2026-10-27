@@ -65,11 +65,21 @@ async function runTryOn(id, person, garment, category) {
     jobs.set(id, { status: "completed", output: [outputUrl], error: null });
   } catch (error) {
     console.error("COASTLINE Hugging Face try-on failed:", error?.stack || error);
-    const message = String(error?.message || "");
+    const message = String(error?.message || error?.details?.message || "");
+    const details = JSON.stringify(error || {});
+    const diagnostic = message + " " + details;
     let userMessage = "Бесплатный AI-сервис временно недоступен. Попробуй позже.";
-    if (/queue|busy|rank|timeout|sleeping|starting|loading/i.test(message)) userMessage = "AI сейчас занят или запускается. Подожди минуту и попробуй снова.";
-    if (/api_name|endpoint|parameters|validation|unexpected argument/i.test(message)) userMessage = "AI-модель изменила API. Нужно обновить подключение.";
-    if (/401|403|auth|token/i.test(message)) userMessage = "AI-сервис требует дополнительного доступа. Бесплатный запуск сейчас недоступен.";
+    if (/ZeroGPU quota exceeded|quota exceeded|runs limit/i.test(diagnostic)) {
+      userMessage = process.env.HF_TOKEN
+        ? "Бесплатная GPU-квота Hugging Face исчерпана. Подожди сброса дневного лимита или используй другой доступный AI-сервис."
+        : "Бесплатная GPU-квота Hugging Face исчерпана. Добавь личный HF_TOKEN в Render → Environment, чтобы использовать квоту своего бесплатного аккаунта.";
+    } else if (/queue|busy|rank|timeout|sleeping|starting|loading/i.test(diagnostic)) {
+      userMessage = "AI сейчас занят или запускается. Подожди минуту и попробуй снова.";
+    } else if (/api_name|endpoint|parameters|validation|unexpected argument/i.test(diagnostic)) {
+      userMessage = "AI-модель изменила API. Нужно обновить подключение.";
+    } else if (/401|403|auth|token|unauthorized|forbidden/i.test(diagnostic)) {
+      userMessage = "Hugging Face отклонил доступ. Проверь HF_TOKEN в Render → Environment; токен не вставляй в код сайта.";
+    }
     jobs.set(id, { status: "failed", output: null, error: userMessage });
   } finally {
     if (dir) await fs.rm(dir, { recursive: true, force: true }).catch(() => {});
