@@ -16,7 +16,7 @@ app.use(express.json({ limit: "20mb" }));
 app.use(express.static(process.cwd()));
 
 const jobs = new Map();
-const SPACE_ID = "fashn-ai/fashn-vton-1.5";
+const SPACE_ID = "WeShopAI/WeShopAI-Virtual-Try-On";
 
 function imageData(value) {
   if (typeof value !== "string") return null;
@@ -40,22 +40,31 @@ async function runTryOn(id, person, garment, category) {
       fs.writeFile(garmentPath, garment.buffer)
     ]);
 
-    // Inputs match the public Space app.py run_button.click order:
-    // person_image, garment_image, category, garment_photo_type,
-    // num_timesteps, guidance_scale, seed, segmentation_free.
+    // WeShopAI's public trial Space uses a different UI/API from FASHN.
+    // Inspect its live Gradio schema so endpoint names and parameter order are not guessed.
     console.log("Connecting to public Hugging Face Space:", SPACE_ID);
     const client = await Client.connect(SPACE_ID, process.env.HF_TOKEN ? { token: process.env.HF_TOKEN } : {});
-    console.log("Connected. Starting virtual try-on.");
-    const result = await client.predict("/try_on", [
-      handle_file(personPath),
-      handle_file(garmentPath),
-      category,
-      "flat-lay",
-      20,
-      1.5,
-      Math.floor(Math.random() * 1000000),
-      true
-    ]);
+    const api = await client.view_api();
+    console.log("WeShopAI API schema:", JSON.stringify(api).slice(0, 9000));
+    const endpoints = api?.named_endpoints || {};
+    const candidates = Object.entries(endpoints).filter(([name, ep]) =>
+      /generate|try.?on|predict|submit/i.test(name) &&
+      Array.isArray(ep?.parameters) &&
+      ep.parameters.some(p => /garment|cloth|main.?image|product.?image/i.test(String(p.parameter_name || p.label || ""))) &&
+      ep.parameters.some(p => /person|human|background.?reference|model.?image/i.test(String(p.parameter_name || p.label || "")))
+    );
+    if (!candidates.length) throw new Error("WeShopAI API schema did not expose a recognizable garment/person endpoint.");
+    const [apiName, endpoint] = candidates[0];
+    const payload = endpoint.parameters.map(p => {
+      const name = String(p.parameter_name || p.label || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+      if (/garment|cloth|mainimage|productimage/.test(name)) return handle_file(garmentPath);
+      if (/person|human|backgroundreference|modelimage/.test(name)) return handle_file(personPath);
+      if (/category|clothcategory/.test(name)) return category;
+      if (Object.prototype.hasOwnProperty.call(p, "parameter_default")) return p.parameter_default;
+      return null;
+    });
+    console.log("Calling WeShopAI endpoint:", apiName, "with", payload.length, "inputs.");
+    const result = await client.predict(apiName, payload);
 
     const outputUrl = extractImage(result?.data);
     if (!outputUrl) {
