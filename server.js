@@ -30,8 +30,9 @@ function imageData(value) {
 
 async function runTryOn(id, person, garment, category) {
   let dir;
+  const failures = [];
   try {
-    jobs.set(id, { status: "processing", output: null, error: null });
+    jobs.set(id, { status: "processing", output: null, error: null, provider: "WeShopAI" });
     dir = await fs.mkdtemp(path.join(os.tmpdir(), "coastline-"));
     const personPath = path.join(dir, "person." + person.ext);
     const garmentPath = path.join(dir, "garment." + garment.ext);
@@ -40,42 +41,80 @@ async function runTryOn(id, person, garment, category) {
       fs.writeFile(garmentPath, garment.buffer)
     ]);
 
-    // WeShopAI public demo's generate_image inputs are:
-    // main_image (garment), background_image (person), did (session ID).
-    console.log("Connecting to public Hugging Face Space:", SPACE_ID);
-    const client = await Client.connect(SPACE_ID, process.env.HF_TOKEN ? { token: process.env.HF_TOKEN } : {});
-    const sessionId = crypto.randomUUID();
-    console.log("Calling WeShopAI /generate_image with garment, person, and session ID.");
-    const result = await client.predict("/generate_image", [
-      handle_file(garmentPath),
-      handle_file(personPath),
-      sessionId
-    ]);
+    const auth = process.env.HF_TOKEN ? { token: process.env.HF_TOKEN } : {};
+    const providers = [
+      {
+        name: "WeShopAI",
+        space: "WeShopAI/WeShopAI-Virtual-Try-On",
+        run: async client => {
+          const result = await client.predict("/generate_image", [
+            handle_file(garmentPath),
+            handle_file(personPath),
+            crypto.randomUUID()
+          ]);
+          return extractImage(result?.data);
+        }
+      },
+      {
+        name: "WeShopAI backup",
+        space: "sikil/WeShopAI-Virtual-Try-On",
+        run: async client => {
+          const result = await client.predict("/generate_image", [
+            handle_file(garmentPath),
+            handle_file(personPath),
+            crypto.randomUUID()
+          ]);
+          return extractImage(result?.data);
+        }
+      },
+      {
+        name: "OOTDiffusion backup",
+        space: "levihsu/OOTDiffusion",
+        run: async client => {
+          const mappedCategory = category === "bottoms" ? "Lower-body" : category === "one-pieces" ? "Dress" : "Upper-body";
+          const result = await client.predict("/process_dc", [
+            handle_file(personPath),
+            handle_file(garmentPath),
+            mappedCategory,
+            1,
+            20,
+            2,
+            -1
+          ]);
+          return extractImage(result?.data);
+        }
+      }
+    ];
 
-    const outputUrl = extractImage(result?.data);
-    if (!outputUrl) {
-      console.error("Unexpected Hugging Face result:", JSON.stringify(result).slice(0, 1800));
-      throw new Error("AI-сервис не вернул изображение.");
+    for (const provider of providers) {
+      try {
+        jobs.set(id, { status: "processing", output: null, error: null, provider: provider.name });
+        console.log("COASTLINE trying AI provider:", provider.name, "(" + provider.space + ")");
+        const client = await Client.connect(provider.space, auth);
+        const outputUrl = await provider.run(client);
+        if (!outputUrl) throw new Error("Provider returned no usable image URL.");
+        console.log("COASTLINE AI provider succeeded:", provider.name);
+        jobs.set(id, { status: "completed", output: [outputUrl], error: null, provider: provider.name });
+        return;
+      } catch (error) {
+        const message = String(error?.message || error?.details?.message || error);
+        failures.push(provider.name + ": " + message);
+        console.error("COASTLINE provider failed:", provider.name, message);
+      }
     }
-    jobs.set(id, { status: "completed", output: [outputUrl], error: null });
-  } catch (error) {
-    console.error("COASTLINE Hugging Face try-on failed:", error?.stack || error);
-    const message = String(error?.message || error?.details?.message || "");
-    const details = JSON.stringify(error || {});
-    const diagnostic = message + " " + details;
-    let userMessage = "Бесплатный AI-сервис временно недоступен. Попробуй позже.";
-    if (/ZeroGPU quota exceeded|quota exceeded|runs limit/i.test(diagnostic)) {
-      userMessage = process.env.HF_TOKEN
-        ? "Бесплатная GPU-квота Hugging Face исчерпана. Подожди сброса дневного лимита или используй другой доступный AI-сервис."
-        : "Бесплатная GPU-квота Hugging Face исчерпана. Добавь личный HF_TOKEN в Render → Environment, чтобы использовать квоту своего бесплатного аккаунта.";
-    } else if (/queue|busy|rank|timeout|sleeping|starting|loading/i.test(diagnostic)) {
-      userMessage = "AI сейчас занят или запускается. Подожди минуту и попробуй снова.";
-    } else if (/api_name|endpoint|parameters|validation|unexpected argument/i.test(diagnostic)) {
-      userMessage = "AI-модель изменила API. Нужно обновить подключение.";
-    } else if (/401|403|auth|token|unauthorized|forbidden/i.test(diagnostic)) {
-      userMessage = "Hugging Face отклонил доступ. Проверь HF_TOKEN в Render → Environment; токен не вставляй в код сайта.";
+
+    const diagnostics = failures.join(" | ");
+    let userMessage = "Все бесплатные AI-сервисы сейчас недоступны. Попробуй позже — сайт автоматически проверил резервные варианты.";
+    if (/ZeroGPU quota exceeded|quota exceeded|runs limit/i.test(diagnostics)) {
+      userMessage = "Бесплатные AI-сервисы исчерпали доступные лимиты. COASTLINE автоматически попробовал резервные модели, но сейчас они тоже недоступны. Попробуй позже.";
+    } else if (/401|403|auth|token|unauthorized|forbidden/i.test(diagnostics)) {
+      userMessage = "Резервные AI-сервисы отклонили доступ. Проверь HF_TOKEN в Render → Environment. Не вставляй токен в код сайта.";
     }
     jobs.set(id, { status: "failed", output: null, error: userMessage });
+    console.error("All COASTLINE AI providers failed:", diagnostics);
+  } catch (error) {
+    console.error("COASTLINE try-on orchestration failed:", error?.stack || error);
+    jobs.set(id, { status: "failed", output: null, error: "Не удалось запустить AI-примерку. Попробуй позже." });
   } finally {
     if (dir) await fs.rm(dir, { recursive: true, force: true }).catch(() => {});
   }
