@@ -74,7 +74,7 @@ async function runTryOn(id, person, garment, category) {
         run: async client => {
           const garmentType = category === "bottoms" ? "lower_body" : category === "one-pieces" ? "dresses" : "upper_body";
           const modelType = category === "tops" ? "viton_hd" : "dresscode";
-          const result = await client.predict(
+          const result = await client.predict("/leffa_predict_vt", [
             handle_file(personPath),
             handle_file(garmentPath),
             false,
@@ -83,9 +83,8 @@ async function runTryOn(id, person, garment, category) {
             42,
             modelType,
             garmentType,
-            false,
-            api_name="/leffa_predict_vt"
-          );
+            false
+          ]);
           return extractImage(result?.data);
         }
       },
@@ -99,7 +98,7 @@ async function runTryOn(id, person, garment, category) {
             : category === "one-pieces"
               ? "dress"
               : "bra, lingerie top, or upper-body garment";
-          const result = await client.predict(
+          const result = await client.predict("/tryon", [
             {
               background: handle_file(personPath),
               layers: [],
@@ -110,9 +109,8 @@ async function runTryOn(id, person, garment, category) {
             true,
             false,
             30,
-            42,
-            api_name="/tryon"
-          );
+            42
+          ]);
           return extractImage(result?.data);
         }
       },
