@@ -84,7 +84,34 @@ async function runTryOn(id, person, garment, category) {
             modelType,
             garmentType,
             false,
-            "/leffa_predict_vt"
+            api_name="/leffa_predict_vt"
+          );
+          return extractImage(result?.data);
+        }
+      },
+      {
+        name: "IDM-VTON",
+        space: "yisol/IDM-VTON",
+        generationTimeout: 120000,
+        run: async client => {
+          const garmentDescription = category === "bottoms"
+            ? "pants or skirt"
+            : category === "one-pieces"
+              ? "dress"
+              : "bra, lingerie top, or upper-body garment";
+          const result = await client.predict(
+            {
+              background: handle_file(personPath),
+              layers: [],
+              composite: null
+            },
+            handle_file(garmentPath),
+            garmentDescription,
+            true,
+            false,
+            30,
+            42,
+            api_name="/tryon"
           );
           return extractImage(result?.data);
         }
