@@ -44,33 +44,27 @@ async function runTryOn(id, person, garment, category) {
     const auth = process.env.HF_TOKEN ? { token: process.env.HF_TOKEN } : {};
     const providers = [
       {
-        name: "WeShopAI",
-        space: "WeShopAI/WeShopAI-Virtual-Try-On",
+        name: "FASHN VTON 1.5 (high quality)",
+        space: "fashn-ai/fashn-vton-1.5",
+        generationTimeout: 180000,
         run: async client => {
-          const result = await client.predict("/generate_image", [
-            handle_file(garmentPath),
+          const result = await client.predict("/try_on", [
             handle_file(personPath),
-            crypto.randomUUID()
+            handle_file(garmentPath),
+            category,
+            "flat-lay",
+            50,
+            1.5,
+            42,
+            true
           ]);
           return extractImage(result?.data);
         }
       },
       {
-        name: "WeShopAI backup",
-        space: "sikil/WeShopAI-Virtual-Try-On",
-        run: async client => {
-          const result = await client.predict("/generate_image", [
-            handle_file(garmentPath),
-            handle_file(personPath),
-            crypto.randomUUID()
-          ]);
-          return extractImage(result?.data);
-        }
-      },
-      {
-        name: "Leffa Virtual Try-On",
+        name: "Leffa (high quality)",
         space: "franciszzj/Leffa",
-        generationTimeout: 120000,
+        generationTimeout: 150000,
         run: async client => {
           const garmentType = category === "bottoms" ? "lower_body" : category === "one-pieces" ? "dresses" : "upper_body";
           const modelType = category === "tops" ? "viton_hd" : "dress_code";
@@ -91,7 +85,7 @@ async function runTryOn(id, person, garment, category) {
       {
         name: "IDM-VTON",
         space: "yisol/IDM-VTON",
-        generationTimeout: 120000,
+        generationTimeout: 150000,
         run: async client => {
           const garmentDescription = category === "bottoms"
             ? "pants or skirt"
@@ -115,8 +109,9 @@ async function runTryOn(id, person, garment, category) {
         }
       },
       {
-        name: "OOTDiffusion backup",
+        name: "OOTDiffusion",
         space: "levihsu/OOTDiffusion",
+        generationTimeout: 120000,
         run: async client => {
           const mappedCategory = category === "bottoms" ? "Lower-body" : category === "one-pieces" ? "Dress" : "Upper-body";
           const result = await client.predict("/process_dc", [
@@ -127,6 +122,32 @@ async function runTryOn(id, person, garment, category) {
             20,
             2,
             -1
+          ]);
+          return extractImage(result?.data);
+        }
+      },
+      {
+        name: "WeShopAI",
+        space: "WeShopAI/WeShopAI-Virtual-Try-On",
+        generationTimeout: 90000,
+        run: async client => {
+          const result = await client.predict("/generate_image", [
+            handle_file(garmentPath),
+            handle_file(personPath),
+            crypto.randomUUID()
+          ]);
+          return extractImage(result?.data);
+        }
+      },
+      {
+        name: "WeShopAI community mirror",
+        space: "sikil/WeShopAI-Virtual-Try-On",
+        generationTimeout: 90000,
+        run: async client => {
+          const result = await client.predict("/generate_image", [
+            handle_file(garmentPath),
+            handle_file(personPath),
+            crypto.randomUUID()
           ]);
           return extractImage(result?.data);
         }
