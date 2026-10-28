@@ -73,7 +73,7 @@ async function runTryOn(id, person, garment, category) {
         generationTimeout: 120000,
         run: async client => {
           const garmentType = category === "bottoms" ? "lower_body" : category === "one-pieces" ? "dresses" : "upper_body";
-          const modelType = category === "tops" ? "viton_hd" : "dresscode";
+          const modelType = category === "tops" ? "viton_hd" : "dress_code";
           const result = await client.predict("/leffa_predict_vt", [
             handle_file(personPath),
             handle_file(garmentPath),
