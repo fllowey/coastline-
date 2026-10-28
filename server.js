@@ -150,8 +150,10 @@ async function runTryOn(id, person, garment, category) {
           const client = await withTimeout(Client.connect(provider.space, auth), 45000, provider.name + " connection");
           const outputUrl = await withTimeout(provider.run(client), provider.generationTimeout || 65000, provider.name + " generation");
           if (!outputUrl) throw new Error("Provider returned no usable image URL.");
+          // Copy the result immediately: public Gradio Spaces may delete temporary /tmp/gradio files soon after prediction.
+          const stableImage = await withTimeout(materializeImage(outputUrl), 20000, provider.name + " result download");
           console.log("COASTLINE AI provider succeeded:", provider.name);
-          jobs.set(id, { status: "completed", output: [outputUrl], error: null, provider: provider.name });
+          jobs.set(id, { status: "completed", output: [stableImage], error: null, provider: provider.name });
           succeeded = true;
           return;
         } catch (error) {
@@ -187,18 +189,33 @@ async function runTryOn(id, person, garment, category) {
 
 function extractImage(value) {
   if (!value) return null;
-  if (typeof value === "string" && /^https?:\/\//i.test(value)) return value;
+  if (typeof value === "string" && (/^https?:\/\//i.test(value) || /^data:image\/(png|jpeg|jpg|webp);base64,/i.test(value))) return value;
   if (Array.isArray(value)) {
     for (const item of value) { const found = extractImage(item); if (found) return found; }
   }
   if (typeof value === "object") {
-    if (typeof value.url === "string") return value.url;
+    if (typeof value.url === "string" && /^https?:\/\//i.test(value.url)) return value.url;
     if (typeof value.path === "string" && /^https?:\/\//i.test(value.path)) return value.path;
     for (const key of ["image", "output", "images", "value"]) {
       const found = extractImage(value[key]); if (found) return found;
     }
   }
   return null;
+}
+
+async function materializeImage(source) {
+  if (typeof source !== "string") throw new Error("AI provider returned an invalid image reference.");
+  if (/^data:image\/(png|jpeg|jpg|webp);base64,/i.test(source)) return source;
+  if (!/^https?:\/\//i.test(source)) throw new Error("AI provider returned a temporary local file path instead of a public image URL.");
+  const response = await fetch(source, { redirect: "follow" });
+  if (!response.ok) throw new Error("Generated image could not be downloaded (HTTP " + response.status + ").");
+  const contentType = (response.headers.get("content-type") || "").split(";")[0].toLowerCase();
+  if (!["image/png", "image/jpeg", "image/webp"].includes(contentType)) {
+    throw new Error("AI provider result is no longer an image (content type: " + (contentType || "unknown") + ").");
+  }
+  const bytes = Buffer.from(await response.arrayBuffer());
+  if (!bytes.length || bytes.length > 12 * 1024 * 1024) throw new Error("Generated image is empty or larger than 12 MB.");
+  return "data:" + contentType + ";base64," + bytes.toString("base64");
 }
 
 app.post("/api/tryon", async (req, res) => {
