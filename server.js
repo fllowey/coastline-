@@ -115,6 +115,42 @@ async function runTryOn(id, person, garment, category) {
         }
       },
       {
+        name: "IDM-VTON community mirror 1",
+        space: "ronniechoyy/IDM-VTON",
+        generationTimeout: 120000,
+        run: async client => {
+          const garmentDescription = category === "bottoms" ? "pants or skirt" : category === "one-pieces" ? "dress" : "bra, lingerie top, or upper-body garment";
+          const result = await client.predict("/tryon", [
+            { background: handle_file(personPath), layers: [], composite: null },
+            handle_file(garmentPath),
+            garmentDescription,
+            true,
+            false,
+            30,
+            42
+          ]);
+          return extractImage(result?.data);
+        }
+      },
+      {
+        name: "IDM-VTON community mirror 2",
+        space: "ChrisJohnson111/IDM-VTON",
+        generationTimeout: 120000,
+        run: async client => {
+          const garmentDescription = category === "bottoms" ? "pants or skirt" : category === "one-pieces" ? "dress" : "bra, lingerie top, or upper-body garment";
+          const result = await client.predict("/tryon", [
+            { background: handle_file(personPath), layers: [], composite: null },
+            handle_file(garmentPath),
+            garmentDescription,
+            true,
+            false,
+            30,
+            42
+          ]);
+          return extractImage(result?.data);
+        }
+      },
+      {
         name: "OOTDiffusion backup",
         space: "levihsu/OOTDiffusion",
         run: async client => {
