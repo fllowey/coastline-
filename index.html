@@ -34,6 +34,19 @@ body{background:#f7f5f0;color:#292824}
 .top{background:#f7f5f0;border-bottom-color:#e7e1d7}.logo{background:#292824;border-radius:9px 9px 9px 2px;transform:none}.cta,.primary{background:#292824;border-radius:10px}.cta:hover,.primary:hover{background:#b85c3d}
 .eyebrow{color:#b85c3d}h1 em{color:#b85c3d}.panel{border-color:#e7e1d7;border-radius:15px;box-shadow:0 8px 28px #29282408}.head{border-color:#eee9e1}.num{border-radius:6px;background:#eee5db;color:#7c4b38}.zone{background:#faf8f3;border-color:#d8cfc3;border-radius:12px}.zone:hover{background:#f2eee7;border-color:#b85c3d}.type{border-radius:8px}.type.active{border-color:#b85c3d;background:#f5e9e2;color:#8f422c;box-shadow:inset 0 0 0 1px #b85c3d}.outline,.mini{border-radius:9px}.footer{background:#eeeae2}
 .result-section,.works-section{max-width:1000px;margin:0 auto 42px;padding:0 24px}
+
+.video-face-section{max-width:1000px;margin:0 auto 42px;padding:0 24px}
+.video-face-card{background:#fffefa;border:1px solid #e7e1d7;border-radius:16px;overflow:hidden;box-shadow:0 8px 28px #29282408}
+.video-face-content{padding:24px;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:22px}
+.video-face-content h2{font:500 30px/1.1 'Playfair Display',serif;margin:9px 0}
+.video-face-content p{font-size:12px;line-height:1.7;color:#77746d;margin:0;max-width:610px}
+.video-face-actions{display:flex;flex-direction:column;gap:9px;min-width:210px}
+.video-face-actions a{display:block;text-align:center;text-decoration:none;border-radius:9px;padding:12px 15px;font-size:11px;font-weight:700}
+.video-face-main{background:#292824;color:#fff}
+.video-face-alt{border:1px solid #e7e1d7;color:#292824;background:#fffefa}
+.video-face-note{padding:0 24px 22px;font-size:10px;line-height:1.6;color:#89857d}
+@media(max-width:650px){.video-face-section{padding:0 5vw;margin-bottom:30px}.video-face-content{grid-template-columns:1fr;padding:18px;gap:17px}.video-face-content h2{font-size:26px}.video-face-actions{min-width:0}.video-face-note{padding:0 18px 18px}}
+
 .result-panel{background:#fffefa;border:1px solid #e7e1d7;border-radius:16px;overflow:hidden;box-shadow:0 8px 28px #29282408}
 .result-panel .head{padding:18px 22px}.result-body{padding:22px}
 .result-empty{min-height:210px;display:grid;place-items:center;text-align:center;background:#f2efe8;border:1px dashed #ddd4c8;border-radius:12px;padding:25px;color:#77746d}
@@ -45,7 +58,7 @@ body{background:#f7f5f0;color:#292824}
 #status{max-width:520px;margin:14px auto 0}#result{max-width:680px;max-height:680px;margin:16px auto 0;display:none;width:100%;object-fit:contain;border-radius:12px;background:#f0ece4}.download{display:none;margin:12px auto 0}.privacy{text-align:center}
 @media(max-width:650px){.result-section,.works-section{padding:0 5vw;margin-bottom:30px}.result-body{padding:14px}.result-panel .head{padding:16px}.result-actions{align-items:flex-start;flex-direction:column}.result-actions .outline{width:100%;text-align:center}.works-head{align-items:flex-start;flex-direction:column}.works-head h2{font-size:29px}.works-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.work-info{padding:9px}.work-buttons a,.work-buttons button{font-size:9px;padding:8px 3px}}
 </style></head><body>
-<header class="top"><div class="brand"><div class="logo">c</div> COASTLINE</div><a href="#how">КАК ЭТО РАБОТАЕТ</a><button class="cta" onclick="document.querySelector('#personFile').click()">Начать примерку ↗</button></header>
+<header class="top"><div class="brand"><div class="logo">c</div> COASTLINE</div><a href="#video-face-swap">ЗАМЕНА ЛИЦА В ВИДЕО</a><button class="cta" onclick="document.querySelector('#personFile').click()">Начать примерку ↗</button></header>
 <section class="hero"><div><div class="eyebrow">YOUR STYLE, YOUR RULES</div><h1>Примерь новое.<br><em>Останься собой.</em></h1><p>Загрузи своё фото и вещь, которую хочешь примерить. Найди свой новый образ в спокойном ритме побережья.</p></div><div class="pill">Твоя онлайн-примерочная</div></section>
 <main class="workspace" id="studio"><section class="panel"><div class="head"><span><span class="num">01</span>ТВОЙ ОБРАЗ</span><span class="muted">AI STUDIO</span></div><div class="canvas"><div class="stage" id="stage"><div class="empty" id="empty"><div class="sun"><svg width="31" height="31" viewBox="0 0 32 32" fill="none"><path d="M5 22c6-10 16-10 22-1M8 26c5-5 11-6 17-2M16 5v5M7 9l3 3M25 9l-3 3" stroke="#285d58" stroke-width="1.7" stroke-linecap="round"/><circle cx="16" cy="17" r="2.5" fill="#285d58"/></svg></div><h2>Твой новый образ<br>начинается здесь</h2><p>Добавь фото человека и вещь, которую хочешь примерить.</p><button class="outline" onclick="document.querySelector('#personFile').click()">+ Загрузить фото</button></div><img id="personPreview" class="person hidden" alt="Фото человека"><img id="garmentPreview" class="garment hidden" alt="Загруженная одежда"><div id="hint" class="hint hidden">Перетаскивай вещь, чтобы изменить положение</div></div><div class="actions"><button class="mini" id="reset">↺ Сбросить положение</button><button class="mini" id="remove">× Убрать вещь</button><button class="mini" id="downloadComposition">↓ Скачать композицию</button></div></div></section>
 <aside class="side"><section class="panel"><div class="head"><span><span class="num">01</span>ФОТО ЧЕЛОВЕКА</span></div><div class="body"><label class="zone" for="personFile"><img id="personThumb" class="upload-thumb hidden" alt="Предпросмотр фото человека"><svg width="25" height="25" viewBox="0 0 24 24" fill="none"><rect x="3.5" y="3.5" width="17" height="17" rx="3" stroke="#285d58" stroke-width="1.5"/><circle cx="9" cy="9" r="1.7" stroke="#285d58" stroke-width="1.4"/><path d="m5 18 5-5 3 3 2-2 4 4" stroke="#285d58" stroke-width="1.5" stroke-linecap="round"/></svg><strong>Загрузи свою фотографию</strong><small>Лучше всего — полный рост<br>JPG, PNG или WEBP · до 8 МБ</small><div id="personStatus" class="fileStatus">Фото ещё не добавлено</div></label><input id="personFile" class="hidden" type="file" accept="image/png,image/jpeg,image/webp"></div></section>
@@ -63,6 +76,16 @@ body{background:#f7f5f0;color:#292824}
 <section class="works-section" id="myWorks">
 <div class="works-head"><div><div class="eyebrow">YOUR LOOKBOOK</div><h2>Мои работы</h2><p>Все созданные образы в одном месте — история сохраняется в этом браузере.</p></div><span class="works-count" id="worksCount">0 образов</span></div>
 <div id="worksGrid" class="works-grid"></div><div id="worksEmpty" class="works-empty">Здесь появятся твои генерации.<br>Создай первый образ, чтобы начать коллекцию.</div>
+</section>
+<section class="video-face-section" id="video-face-swap">
+<div class="video-face-card">
+<div class="head"><span><span class="num">04</span>ЗАМЕНА ЛИЦА В ВИДЕО</span><span class="muted">БЕСПЛАТНЫЕ ДЕМО</span></div>
+<div class="video-face-content">
+<div><div class="eyebrow">VIDEO STUDIO</div><h2>Другое лицо. То же видео.</h2><p>Открой бесплатную AI-демоверсию, загрузи фотографию лица и исходный ролик, затем запусти обработку. Для более аккуратного результата используй чёткое фото анфас и видео с хорошо видимым лицом.</p></div>
+<div class="video-face-actions"><a class="video-face-main" href="https://huggingface.co/spaces/tonyassi/video-face-swap" target="_blank" rel="noopener noreferrer">Попробовать бесплатное демо ↗</a><a class="video-face-alt" href="https://huggingface.co/spaces/sewanapi/roop-unleashed" target="_blank" rel="noopener noreferrer">Запасной бесплатный сервис ↗</a></div>
+</div>
+<div class="video-face-note">Бесплатные демо могут ограничивать длину, разрешение и число запусков, а также временно быть недоступны. Обработка происходит на стороннем сервисе — не загружай конфиденциальные видео. Используй только лица и ролики, на обработку которых у тебя есть разрешение, и обозначай синтетические изменения, когда это важно.</div>
+</div>
 </section>
 <section class="how" id="how"><div><div class="eyebrow">SIMPLE AS THE SEA</div><h2>Три шага к новому образу</h2><p>Экспериментируй с вещами и находи сочетания, которые тебе нравятся.</p></div><div class="steps"><div><b>01 — Загрузи фото</b><span>Выбери снимок, на котором хорошо виден силуэт.</span></div><div><b>02 — Добавь вещь</b><span>Загрузи фотографию своей одежды.</span></div><div><b>03 — Примерь с AI</b><span>Получи новый образ и скачай результат.</span></div></div></section><footer class="footer"><span>© 2026 COASTLINE STUDIO</span><span>Создано с любовью к твоему стилю и морскому воздуху.</span></footer><div class="toast" id="toast"></div>
 <script>
